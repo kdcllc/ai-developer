@@ -5,7 +5,11 @@ from chat import process_message, reset_chat_history
 from multi_agent import run_multi_agent
 
 #Configure logging
+from otlp_tracing import configure_oltp_grpc_tracing
+
 logging.basicConfig(level=logging.INFO)
+tracer = configure_oltp_grpc_tracing()
+logger = logging.getLogger(__name__)
 
 def configure_sidebar():
     """Configure the sidebar with navigation options"""

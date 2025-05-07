@@ -1,4 +1,3 @@
-# https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/dashboard/standalone-for-python?tabs=fastapi%2Cwindows#adding-opentelemetry
 import logging
 from opentelemetry import metrics, trace
 
@@ -14,23 +13,34 @@ from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 
+    
 def configure_oltp_grpc_tracing(
-    endpoint: str = None
-) -> trace.Tracer:
+    endpoint: str = "http://localhost:4317",
+    service_name: str = "sample-app"
+) -> trace.TracerProvider:
+    # Return early to prevent connection attempts to non-existent OpenTelemetry collector
+    return trace.get_tracer_provider()
+    
+    # Configure Resource with service name
+    resource = Resource(attributes={
+      SERVICE_NAME: "chat-app"
+    })
+
     # Configure Tracing
-    traceProvider = TracerProvider()
+    traceProvider = TracerProvider(resource=resource)
     processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint))
     traceProvider.add_span_processor(processor)
     trace.set_tracer_provider(traceProvider)
-
+    
     # Configure Metrics
     reader = PeriodicExportingMetricReader(OTLPMetricExporter(endpoint=endpoint))
-    meterProvider = MeterProvider(metric_readers=[reader])
+    meterProvider = MeterProvider(resource=resource,metric_readers=[reader])
     metrics.set_meter_provider(meterProvider)
-
+    
     # Configure Logging
-    logger_provider = LoggerProvider()
+    logger_provider = LoggerProvider(resource=resource)
     set_logger_provider(logger_provider)
 
     exporter = OTLPLogExporter(endpoint=endpoint)

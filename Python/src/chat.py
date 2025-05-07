@@ -7,9 +7,13 @@ from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoic
 from semantic_kernel.connectors.openapi_plugin import OpenAPIFunctionExecutionParameters
 from semantic_kernel.contents.chat_history import ChatHistory
 from semantic_kernel.functions import KernelArguments
-
+from otlp_tracing import configure_oltp_grpc_tracing
+ 
 # Add Logger
+logging.basicConfig(level=logging.INFO)
+tracer = configure_oltp_grpc_tracing()
 logger = logging.getLogger(__name__)
+
 
 load_dotenv(override=True)
 
@@ -19,6 +23,10 @@ def initialize_kernel():
    #Challene 02 - Add Kernel
    kernel = Kernel()
    #Challenge 02 - Chat Completion Service
+   chat_completion_service = AzureChatCompletion(service_id="chat-completion")
+
+    # You can do the following if you have set the necessary environment variables or created a .env file
+    chat_completion_service = AzureChatCompletion(service_id="my-service-id")
    #Challenge 02- Add kernel to the chat completion service
    return kernel
 
